@@ -7,6 +7,7 @@ class DataLoader(object):
 
     def __init__(self,**kwargs):
         self.leagues = {}
+        self.ids = []
 
         _df_list = []
         if len(kwargs) > 0:
@@ -62,6 +63,9 @@ class DataLoader(object):
                 try:
                     _df = pd.read_csv(entry.path)
                     _df = self._clean(_df)
+                    _df["Season"] = filename.split(".")[0].split(name)[1]
+                    _df["Goals"] = _df["FTHG"] + _df["FTAG"]
+                    _df["id"] = self._gen_ids(_df)
                     _df_list.append(_df)
                 except:
                     print("Failed to import ", filename)
@@ -70,6 +74,13 @@ class DataLoader(object):
                 continue
 
         return pd.concat(_df_list,sort=False).sort_index()
+
+
+    def _gen_ids(self,_df):
+        _ids = []
+        for i,v in _df.iterrows():
+            _ids.append(v["Season"]+v["HomeTeam"]+v["AwayTeam"]+str(i.month)+str(i.day))
+        return _ids
 
 
 
